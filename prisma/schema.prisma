@@ -50,18 +50,21 @@ model Company {
 }
 
 model User {
-  id         String      @id @default(cuid())
-  email      String      @unique
-  password   String
-  name       String?
-  role       Role        @default(USER)
-  companyId  String?
-  company    Company?    @relation(fields: [companyId], references: [id])
-  tasks      TaskAssignee[]
-  ownedGroups Group[]    @relation("GroupOwner")
-  groups     UserGroup[]
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  id           String      @id @default(cuid())
+  email        String      @unique
+  password     String
+  name         String?
+  role         Role        @default(USER)
+  companyId    String?
+  company      Company?    @relation(fields: [companyId], references: [id])
+  tasks        TaskAssignee[]
+  ownedGroups  Group[]     @relation("GroupOwner")
+  groups       UserGroup[]
+  comments     TaskComment[]
+  activities   TaskActivity[]
+  notifications Notification[]
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 
   @@index([email])
   @@index([companyId])
@@ -97,6 +100,9 @@ model Task {
   assignees   TaskAssignee[]
   checklists  TaskChecklist[]
   files       TaskFile[]
+  comments    TaskComment[]
+  activities  TaskActivity[]
+  notifications Notification[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -145,6 +151,57 @@ model TaskFile {
 
   @@index([taskId])
   @@index([fileType])
+}
+
+model TaskComment {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  content   String
+  editedAt  DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([taskId])
+  @@index([userId])
+}
+
+model TaskActivity {
+  id        String   @id @default(cuid())
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String   // CREATED, UPDATED, STATUS_CHANGED, ASSIGNEE_ADDED, etc.
+  oldValue  String?
+  newValue  String?
+  metadata  String?  // JSON string for additional data
+  createdAt DateTime @default(now())
+
+  @@index([taskId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String   // TASK_ASSIGNED, COMMENT_ADDED, TASK_UPDATED, DUE_DATE_APPROACHING
+  title     String
+  message   String
+  taskId    String?
+  task      Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  read      Boolean  @default(false)
+  readAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
+  @@index([taskId])
 }
 
 model UserGroup {

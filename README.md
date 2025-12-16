@@ -35,6 +35,10 @@ Task Manager API - A comprehensive task management system built with NestJS, Pri
 - 📎 **File Uploads** - File attachments for tasks
 - 👨‍👩‍👧‍👦 **Groups** - Organize tasks into groups
 - 🔍 **Filtering & Search** - Advanced filtering and search capabilities
+- 💬 **Comments** - Task discussions and collaboration
+- 📜 **Activity Feed** - Track all task changes and history
+- 🔔 **Notifications** - Real-time notifications via WebSocket (Socket.io)
+- 🔌 **WebSocket Support** - Real-time updates for notifications
 - 📚 **Swagger Documentation** - Auto-generated API documentation
 
 ### Tech Stack
@@ -45,6 +49,7 @@ Task Manager API - A comprehensive task management system built with NestJS, Pri
 - **Cache**: Redis (ioredis)
 - **Authentication**: JWT (passport-jwt)
 - **File Upload**: Multer
+- **WebSocket**: Socket.io for real-time notifications
 - **Testing**: Jest
 - **Package Manager**: pnpm
 
@@ -168,6 +173,12 @@ The API includes:
 - Company management endpoints
 - Group management endpoints
 - Task management endpoints (with checklists and file uploads)
+- **WebSocket** - Real-time notifications via Socket.io (`/notifications` namespace)
+
+For WebSocket usage, see [WEBSOCKET.md](./WEBSOCKET.md)
+- **Comments endpoints** - Task discussions
+- **Activity Feed endpoints** - Task history tracking
+- **Notifications endpoints** - Real-time notifications
 
 ## Project Structure
 
@@ -179,6 +190,9 @@ src/
 │   ├── guards/     # Auth guards
 │   └── strategies/ # JWT strategy
 ├── companies/      # Company management
+├── comments/       # Task comments module
+├── activities/     # Activity feed module
+├── notifications/  # Notifications module
 ├── files/          # File upload service
 ├── groups/         # Group management
 ├── prisma/         # Prisma service

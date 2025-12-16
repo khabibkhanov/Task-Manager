@@ -11,6 +11,7 @@ import { FilterTaskDto } from './dto/filter-task.dto';
 import { CreateChecklistDto } from './dto/create-checklist.dto';
 import { UpdateChecklistDto } from './dto/update-checklist.dto';
 import { FilesService } from '../files/files.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { Role } from '@prisma/client';
 
 @Injectable()
@@ -18,6 +19,7 @@ export class TasksService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly filesService: FilesService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async create(createTaskDto: CreateTaskDto, userId: string) {
@@ -118,6 +120,25 @@ export class TasksService {
         },
       },
     });
+
+    // Create activity log
+    await this.createActivity(
+      task.id,
+      userId,
+      'TASK_CREATED',
+      null,
+      task.title,
+    );
+
+    // Notify assignees
+    if (createTaskDto.assigneeIds && createTaskDto.assigneeIds.length > 0) {
+      await this.notifyAssignees(
+        task.id,
+        userId,
+        'TASK_ASSIGNED',
+        createTaskDto.assigneeIds,
+      );
+    }
 
     return task;
   }
@@ -300,7 +321,14 @@ export class TasksService {
 
     const task = await this.prisma.task.findUnique({
       where: { id },
-      include: { group: true },
+      include: {
+        group: true,
+        assignees: {
+          select: {
+            userId: true,
+          },
+        },
+      },
     });
 
     if (!task) {
@@ -310,6 +338,22 @@ export class TasksService {
     // Others can only update tasks from their company
     if (task.group && task.group.companyId !== user.companyId) {
       throw new ForbiddenException('Access denied');
+    }
+
+    // Track changes for activity log
+    const changes: Array<{ field: string; old: any; new: any }> = [];
+
+    if (updateTaskDto.title && updateTaskDto.title !== task.title) {
+      changes.push({ field: 'title', old: task.title, new: updateTaskDto.title });
+    }
+    if (updateTaskDto.status && updateTaskDto.status !== task.status) {
+      changes.push({ field: 'status', old: task.status, new: updateTaskDto.status });
+    }
+    if (updateTaskDto.priority && updateTaskDto.priority !== task.priority) {
+      changes.push({ field: 'priority', old: task.priority, new: updateTaskDto.priority });
+    }
+    if (updateTaskDto.groupId && updateTaskDto.groupId !== task.groupId) {
+      changes.push({ field: 'groupId', old: task.groupId, new: updateTaskDto.groupId });
     }
 
     // Verify new group if provided
@@ -324,6 +368,9 @@ export class TasksService {
     }
 
     // Handle assignees update
+    const oldAssigneeIds = task.assignees?.map((a) => a.userId) || [];
+    let newAssigneeIds: string[] = [];
+
     if (updateTaskDto.assigneeIds !== undefined) {
       // Delete existing assignees
       await this.prisma.taskAssignee.deleteMany({
@@ -354,11 +401,19 @@ export class TasksService {
             userId: assigneeId,
           })),
         });
+
+        newAssigneeIds = updateTaskDto.assigneeIds;
+        const addedAssigneeIds = newAssigneeIds.filter(
+          (id) => !oldAssigneeIds.includes(id),
+        );
+        if (addedAssigneeIds.length > 0) {
+          await this.notifyAssignees(id, userId, 'TASK_ASSIGNED', addedAssigneeIds);
+        }
       }
     }
 
     // Update task
-    return this.prisma.task.update({
+    const updatedTask = await this.prisma.task.update({
       where: { id },
       data: {
         title: updateTaskDto.title,
@@ -396,6 +451,27 @@ export class TasksService {
         },
       },
     });
+
+    // Create activity logs for changes
+    for (const change of changes) {
+      await this.createActivity(
+        id,
+        userId,
+        `TASK_${change.field.toUpperCase()}_CHANGED`,
+        change.old?.toString() || null,
+        change.new?.toString() || null,
+      );
+    }
+
+    // Notify assignees if status changed
+    if (updateTaskDto.status && updateTaskDto.status !== task.status) {
+      await this.notifyTaskAssignees(id, userId, 'TASK_STATUS_CHANGED', {
+        oldStatus: task.status,
+        newStatus: updateTaskDto.status,
+      });
+    }
+
+    return updatedTask;
   }
 
   async remove(id: string, userId: string) {
@@ -430,6 +506,9 @@ export class TasksService {
     if (task.group && task.group.companyId !== user.companyId) {
       throw new ForbiddenException('Access denied');
     }
+
+    // Create activity log
+    await this.createActivity(id, userId, 'TASK_DELETED', task.title, null);
 
     // Delete associated files
     for (const file of task.files) {
@@ -562,5 +641,101 @@ export class TasksService {
 
     await this.findOne(taskId, userId);
     return this.filesService.deleteFile(fileId);
+  }
+
+  // Helper methods for activity tracking
+  private async createActivity(
+    taskId: string,
+    userId: string,
+    action: string,
+    oldValue: string | null,
+    newValue: string | null,
+    metadata?: any,
+  ) {
+    await this.prisma.taskActivity.create({
+      data: {
+        taskId,
+        userId,
+        action,
+        oldValue,
+        newValue,
+        metadata: metadata ? JSON.stringify(metadata) : null,
+      },
+    });
+  }
+
+  private async notifyAssignees(
+    taskId: string,
+    authorId: string,
+    type: string,
+    assigneeIds: string[],
+  ) {
+    const task = await this.prisma.task.findUnique({
+      where: { id: taskId },
+      select: { id: true, title: true },
+    });
+
+    if (!task) return;
+
+    // Filter out author from notifications
+    const notifyIds = assigneeIds.filter((id) => id !== authorId);
+
+    if (notifyIds.length === 0) return;
+
+    // Create notifications using NotificationsService (which handles WebSocket)
+    await Promise.all(
+      notifyIds.map((assigneeId) =>
+        this.notificationsService.createNotification(
+          assigneeId,
+          type,
+          type === 'TASK_ASSIGNED' ? 'Task assigned to you' : 'Task updated',
+          type === 'TASK_ASSIGNED'
+            ? `You have been assigned to task: ${task.title}`
+            : `Task "${task.title}" has been updated`,
+          taskId,
+        ),
+      ),
+    );
+  }
+
+  private async notifyTaskAssignees(
+    taskId: string,
+    authorId: string,
+    type: string,
+    metadata?: any,
+  ) {
+    const task = await this.prisma.task.findUnique({
+      where: { id: taskId },
+      select: {
+        id: true,
+        title: true,
+        assignees: {
+          select: {
+            userId: true,
+          },
+        },
+      },
+    });
+
+    if (!task) return;
+
+    const assigneeIds = task.assignees
+      .map((a) => a.userId)
+      .filter((id) => id !== authorId);
+
+    if (assigneeIds.length === 0) return;
+
+    // Create notifications using NotificationsService (which handles WebSocket)
+    await Promise.all(
+      assigneeIds.map((assigneeId) =>
+        this.notificationsService.createNotification(
+          assigneeId,
+          type,
+          'Task updated',
+          `Task "${task.title}" has been updated`,
+          taskId,
+        ),
+      ),
+    );
   }
 }
