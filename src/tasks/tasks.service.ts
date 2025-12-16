@@ -358,7 +358,7 @@ export class TasksService {
     }
 
     // Update task
-    const updatedTask = await this.prisma.task.update({
+    return this.prisma.task.update({
       where: { id },
       data: {
         title: updateTaskDto.title,
@@ -396,8 +396,6 @@ export class TasksService {
         },
       },
     });
-
-    return updatedTask;
   }
 
   async remove(id: string, userId: string) {
@@ -462,7 +460,8 @@ export class TasksService {
       throw new ForbiddenException('Superadmin cannot create checklists');
     }
 
-    const task = await this.findOne(taskId, userId);
+    // Verify task access
+    await this.findOne(taskId, userId);
 
     // Get max order
     const maxOrder = await this.prisma.taskChecklist.aggregate({
@@ -507,11 +506,7 @@ export class TasksService {
     });
   }
 
-  async deleteChecklist(
-    taskId: string,
-    checklistId: string,
-    userId: string,
-  ) {
+  async deleteChecklist(taskId: string, checklistId: string, userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -533,11 +528,7 @@ export class TasksService {
   }
 
   // File upload
-  async uploadFile(
-    taskId: string,
-    file: Express.Multer.File,
-    userId: string,
-  ) {
+  async uploadFile(taskId: string, file: Express.Multer.File, userId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });

@@ -12,4 +12,3 @@ export class CreateCompanyDto {
   @IsString()
   description?: string;
 }
-

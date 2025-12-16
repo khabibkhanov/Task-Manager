@@ -39,20 +39,14 @@ export class TasksController {
   @Post()
   @ApiOperation({ summary: 'Create a new task' })
   @ApiResponse({ status: 201, description: 'Task created successfully' })
-  create(
-    @Body() createTaskDto: CreateTaskDto,
-    @CurrentUser() user: any,
-  ) {
+  create(@Body() createTaskDto: CreateTaskDto, @CurrentUser() user: any) {
     return this.tasksService.create(createTaskDto, user.userId);
   }
 
   @Get()
   @ApiOperation({ summary: 'Get all tasks with filters' })
   @ApiResponse({ status: 200, description: 'List of tasks' })
-  findAll(
-    @Query() filterDto: FilterTaskDto,
-    @CurrentUser() user: any,
-  ) {
+  findAll(@Query() filterDto: FilterTaskDto, @CurrentUser() user: any) {
     return this.tasksService.findAll(filterDto, user.userId);
   }
 

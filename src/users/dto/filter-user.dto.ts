@@ -18,4 +18,3 @@ export class FilterUserDto {
   @IsString()
   search?: string;
 }
-

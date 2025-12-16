@@ -36,24 +36,20 @@ export class UsersController {
   @Post()
   @UseGuards(RolesGuard)
   @Roles(Role.SUPERADMIN, Role.ADMIN, Role.MANAGER)
-  @ApiOperation({ summary: 'Create a new user (Superadmin/Admin/Manager only)' })
+  @ApiOperation({
+    summary: 'Create a new user (Superadmin/Admin/Manager only)',
+  })
   @ApiResponse({ status: 201, description: 'User created successfully' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
   @ApiResponse({ status: 409, description: 'User already exists' })
-  create(
-    @Body() createUserDto: CreateUserDto,
-    @CurrentUser() user: any,
-  ) {
+  create(@Body() createUserDto: CreateUserDto, @CurrentUser() user: any) {
     return this.usersService.create(createUserDto, user.userId);
   }
 
   @Get()
   @ApiOperation({ summary: 'Get all users (filtered by company)' })
   @ApiResponse({ status: 200, description: 'List of users' })
-  findAll(
-    @Query() filterDto: FilterUserDto,
-    @CurrentUser() user: any,
-  ) {
+  findAll(@Query() filterDto: FilterUserDto, @CurrentUser() user: any) {
     return this.usersService.findAll(filterDto, user.userId);
   }
 
@@ -76,10 +72,7 @@ export class UsersController {
   @Patch('me')
   @ApiOperation({ summary: 'Update current user profile' })
   @ApiResponse({ status: 200, description: 'User updated' })
-  updateMe(
-    @Body() updateUserDto: UpdateUserDto,
-    @CurrentUser() user: any,
-  ) {
+  updateMe(@Body() updateUserDto: UpdateUserDto, @CurrentUser() user: any) {
     return this.usersService.update(user.userId, updateUserDto, user.userId);
   }
 
@@ -106,11 +99,7 @@ export class UsersController {
     @Body() updatePasswordDto: UpdatePasswordDto,
     @CurrentUser() user: any,
   ) {
-    return this.usersService.updatePassword(
-      id,
-      updatePasswordDto,
-      user.userId,
-    );
+    return this.usersService.updatePassword(id, updatePasswordDto, user.userId);
   }
 
   @Delete(':id')

@@ -91,10 +91,7 @@ export class GroupsService {
             },
           },
         },
-        orderBy: [
-          { isDefault: 'desc' },
-          { createdAt: 'desc' },
-        ],
+        orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
       });
     }
 
@@ -120,10 +117,7 @@ export class GroupsService {
           },
         },
       },
-      orderBy: [
-        { isDefault: 'desc' },
-        { createdAt: 'desc' },
-      ],
+      orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
     });
   }
 
@@ -342,10 +336,7 @@ export class GroupsService {
     }
 
     // SUPERADMIN can add any user, others can only add users from same company
-    if (
-      user.role !== Role.SUPERADMIN &&
-      member.companyId !== user.companyId
-    ) {
+    if (user.role !== Role.SUPERADMIN && member.companyId !== user.companyId) {
       throw new ForbiddenException('Member must belong to same company');
     }
 

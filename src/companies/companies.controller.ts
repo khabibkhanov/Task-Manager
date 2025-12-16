@@ -8,7 +8,12 @@ import {
   Delete,
   UseGuards,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { CompaniesService } from './companies.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
@@ -25,10 +30,7 @@ export class CompaniesController {
   @Post()
   @ApiOperation({ summary: 'Create a new company' })
   @ApiResponse({ status: 201, description: 'Company created successfully' })
-  create(
-    @Body() createCompanyDto: CreateCompanyDto,
-    @CurrentUser() user: any,
-  ) {
+  create(@Body() createCompanyDto: CreateCompanyDto, @CurrentUser() user: any) {
     return this.companiesService.create(createCompanyDto, user.userId);
   }
 
@@ -67,4 +69,3 @@ export class CompaniesController {
     return this.companiesService.remove(id, user.userId);
   }
 }
-

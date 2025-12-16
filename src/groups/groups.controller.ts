@@ -30,10 +30,7 @@ export class GroupsController {
   @Post()
   @ApiOperation({ summary: 'Create a new group' })
   @ApiResponse({ status: 201, description: 'Group created successfully' })
-  create(
-    @Body() createGroupDto: CreateGroupDto,
-    @CurrentUser() user: any,
-  ) {
+  create(@Body() createGroupDto: CreateGroupDto, @CurrentUser() user: any) {
     return this.groupsService.create(createGroupDto, user.userId);
   }
 

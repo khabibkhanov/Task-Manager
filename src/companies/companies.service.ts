@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateCompanyDto } from './dto/create-company.dto';
 import { UpdateCompanyDto } from './dto/update-company.dto';
@@ -29,7 +33,11 @@ export class CompaniesService {
     // Create default groups for the company
     const defaultGroups = [
       { name: 'Todo', description: 'Tasks to be done', isDefault: true },
-      { name: 'In Progress', description: 'Tasks in progress', isDefault: true },
+      {
+        name: 'In Progress',
+        description: 'Tasks in progress',
+        isDefault: true,
+      },
       { name: 'Done', description: 'Completed tasks', isDefault: true },
     ];
 
@@ -210,4 +218,3 @@ export class CompaniesService {
     });
   }
 }
-

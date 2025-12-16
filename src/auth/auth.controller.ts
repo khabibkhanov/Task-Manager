@@ -32,7 +32,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Get current user profile' })
   @ApiResponse({ status: 200, description: 'User profile' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  getProfile(@CurrentUser() user: any) {
+  getProfile(@CurrentUser() user: { userId: string }) {
     return this.authService.validateUser(user.userId);
   }
 }

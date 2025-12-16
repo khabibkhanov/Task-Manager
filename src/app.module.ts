@@ -8,9 +8,11 @@ import { TasksModule } from './tasks/tasks.module';
 import { CompaniesModule } from './companies/companies.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './redis/redis.module';
+import { ConfigModule } from './config/config.module';
 
 @Module({
   imports: [
+    ConfigModule,
     PrismaModule,
     RedisModule,
     UsersModule,

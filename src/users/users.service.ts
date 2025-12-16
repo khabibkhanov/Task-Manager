@@ -38,9 +38,7 @@ export class UsersService {
       currentUser.role !== Role.ADMIN &&
       currentUser.role !== Role.MANAGER
     ) {
-      throw new ForbiddenException(
-        'Only Admin and Manager can create users',
-      );
+      throw new ForbiddenException('Only Admin and Manager can create users');
     }
 
     // Check if user already exists
@@ -157,10 +155,7 @@ export class UsersService {
           },
         },
       },
-      orderBy: [
-        { role: 'asc' },
-        { createdAt: 'desc' },
-      ],
+      orderBy: [{ role: 'asc' }, { createdAt: 'desc' }],
     });
   }
 
@@ -217,7 +212,11 @@ export class UsersService {
     return user;
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto, currentUserId: string) {
+  async update(
+    id: string,
+    updateUserDto: UpdateUserDto,
+    currentUserId: string,
+  ) {
     const currentUser = await this.prisma.user.findUnique({
       where: { id: currentUserId },
     });
@@ -246,7 +245,9 @@ export class UsersService {
         user.role !== Role.ADMIN);
 
     if (!canUpdate) {
-      throw new ForbiddenException('You do not have permission to update this user');
+      throw new ForbiddenException(
+        'You do not have permission to update this user',
+      );
     }
 
     // Only SUPERADMIN and ADMIN can change roles

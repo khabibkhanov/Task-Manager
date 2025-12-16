@@ -13,4 +13,3 @@ export class UpdateChecklistDto {
   @IsBoolean()
   isCompleted?: boolean;
 }
-

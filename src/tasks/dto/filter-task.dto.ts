@@ -1,10 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsEnum,
-  IsISO8601,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsEnum, IsISO8601, IsOptional, IsString } from 'class-validator';
 import { TaskPriority, TaskStatus } from '@prisma/client';
 
 export class FilterTaskDto {
@@ -43,4 +38,3 @@ export class FilterTaskDto {
   @IsString()
   search?: string;
 }
-

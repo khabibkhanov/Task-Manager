@@ -23,39 +23,210 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Task Manager API - A comprehensive task management system built with NestJS, Prisma, PostgreSQL, and Redis.
 
-## Project setup
+### Features
+
+- 🔐 **Authentication & Authorization** - JWT-based authentication with role-based access control
+- 🏢 **Company Management** - Multi-tenant company support
+- 👥 **User Management** - User CRUD with role management (SUPERADMIN, ADMIN, MANAGER, USER)
+- 📋 **Task Management** - Full CRUD operations for tasks
+- ✅ **Checklists** - Task checklist items management
+- 📎 **File Uploads** - File attachments for tasks
+- 👨‍👩‍👧‍👦 **Groups** - Organize tasks into groups
+- 🔍 **Filtering & Search** - Advanced filtering and search capabilities
+- 📚 **Swagger Documentation** - Auto-generated API documentation
+
+### Tech Stack
+
+- **Framework**: NestJS 11
+- **Language**: TypeScript 5.7
+- **Database**: PostgreSQL with Prisma ORM
+- **Cache**: Redis (ioredis)
+- **Authentication**: JWT (passport-jwt)
+- **File Upload**: Multer
+- **Testing**: Jest
+- **Package Manager**: pnpm
+
+## Prerequisites
+
+- Node.js >= 18
+- PostgreSQL >= 14
+- Redis >= 6
+- pnpm >= 8
+
+## Project Setup
+
+### 1. Clone the repository
 
 ```bash
-$ pnpm install
+git clone <repository-url>
+cd task
 ```
 
-## Compile and run the project
+### 2. Install dependencies
 
 ```bash
-# development
-$ pnpm run start
-
-# watch mode
-$ pnpm run start:dev
-
-# production mode
-$ pnpm run start:prod
+pnpm install
 ```
 
-## Run tests
+### 3. Environment Configuration
+
+Copy `.env.example` to `.env` and configure:
 
 ```bash
-# unit tests
-$ pnpm run test
-
-# e2e tests
-$ pnpm run test:e2e
-
-# test coverage
-$ pnpm run test:cov
+cp .env.example .env
 ```
+
+Edit `.env` with your configuration:
+
+```env
+PORT=8000
+DATABASE_URL=postgresql://user:password@localhost:5432/task
+JWT_SECRET=your-secret-key-change-in-production
+REDIS_URL=redis://127.0.0.1:6379
+```
+
+### 4. Database Setup
+
+```bash
+# Generate Prisma Client
+pnpm prisma:generate
+
+# Run migrations
+pnpm prisma:migrate:dev
+
+# Or push schema (for development)
+pnpm prisma:db-push
+```
+
+### 5. Start Redis
+
+Make sure Redis is running on your system:
+
+```bash
+# macOS (with Homebrew)
+brew services start redis
+
+# Linux
+sudo systemctl start redis
+
+# Docker
+docker run -d -p 6379:6379 redis:latest
+```
+
+### 6. Run the application
+
+```bash
+# Development mode
+pnpm start:dev
+
+# Production mode
+pnpm start:prod
+```
+
+The API will be available at:
+- **API**: http://localhost:8000/api
+- **Swagger Docs**: http://localhost:8000/api/docs
+
+## Available Scripts
+
+```bash
+# Development
+pnpm start:dev          # Start in watch mode
+pnpm start:debug        # Start in debug mode
+
+# Production
+pnpm build              # Build the project
+pnpm start:prod         # Start production server
+
+# Database
+pnpm prisma:generate    # Generate Prisma Client
+pnpm prisma:migrate:dev # Run migrations
+pnpm prisma:db-push     # Push schema to database
+pnpm prisma:studio      # Open Prisma Studio
+
+# Testing
+pnpm test               # Run unit tests
+pnpm test:watch         # Run tests in watch mode
+pnpm test:cov           # Run tests with coverage
+pnpm test:e2e           # Run e2e tests
+
+# Code Quality
+pnpm lint               # Run ESLint
+pnpm format             # Format code with Prettier
+```
+
+## API Documentation
+
+Once the application is running, visit:
+- **Swagger UI**: http://localhost:8000/api/docs
+
+The API includes:
+- Authentication endpoints (register, login)
+- User management endpoints
+- Company management endpoints
+- Group management endpoints
+- Task management endpoints (with checklists and file uploads)
+
+## Project Structure
+
+```
+src/
+├── auth/           # Authentication module
+│   ├── decorators/ # Custom decorators
+│   ├── dto/        # Data transfer objects
+│   ├── guards/     # Auth guards
+│   └── strategies/ # JWT strategy
+├── companies/      # Company management
+├── files/          # File upload service
+├── groups/         # Group management
+├── prisma/         # Prisma service
+├── redis/          # Redis service
+├── tasks/          # Task management
+└── users/          # User management
+```
+
+## Testing
+
+The project includes comprehensive test coverage:
+
+- **Unit Tests**: Service and controller tests
+- **E2E Tests**: End-to-end integration tests
+
+Run tests:
+
+```bash
+# All tests
+pnpm test
+
+# Watch mode
+pnpm test:watch
+
+# Coverage report
+pnpm test:cov
+```
+
+## Role-Based Access Control
+
+The system supports the following roles:
+
+- **SUPERADMIN**: Full system access, can view all companies
+- **ADMIN**: Company-level admin, manages users and company settings
+- **MANAGER**: Can manage tasks and groups within company
+- **USER**: Standard user, can create and manage own tasks
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## License
+
+This project is [MIT licensed](LICENSE).
 
 ## Deployment
 
