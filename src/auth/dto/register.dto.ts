@@ -8,7 +8,7 @@ import {
 } from 'class-validator';
 import { Role } from '@prisma/client';
 
-export class CreateUserDto {
+export class RegisterDto {
   @ApiProperty({ example: 'user@example.com' })
   @IsEmail()
   email: string;
@@ -27,4 +27,10 @@ export class CreateUserDto {
   @IsOptional()
   @IsEnum(Role)
   role?: Role;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  companyId?: string;
 }
+

@@ -1,14 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsOptional, IsString, MinLength } from 'class-validator';
 
-export class CreateGroupDto {
+export class CreateChecklistDto {
   @ApiProperty()
   @IsString()
   @MinLength(1)
-  name: string;
+  title: string;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, default: false })
   @IsOptional()
-  @IsString()
-  description?: string;
+  isCompleted?: boolean;
 }
+

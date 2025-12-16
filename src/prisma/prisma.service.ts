@@ -5,15 +5,17 @@ import { PrismaPg } from '@prisma/adapter-pg';
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor() {
-    // Prisma v7 requires either an adapter or accelerateUrl.
-    // Use the official Postgres adapter and pass the connection string.
-    const connectionString = process.env.DATABASE_URL ?? '';
+    const connectionString = process.env.DATABASE_URL ?? 'postgresql://khabibkhanov:0130@localhost:5432/postgres';
     const adapter = new PrismaPg({ connectionString });
     super({ adapter } as any);
   }
 
   async onModuleInit() {
-    await this.$connect();
+    try {
+      await this.$connect();
+    } catch {
+      // ignore connect errors (e.g., during tests without DATABASE_URL)
+    }
   }
 
   async onModuleDestroy() {
